@@ -20,13 +20,13 @@
 # server as the sensor name.
 #
 # (default: not specified)
-#sensor_name=myhostname
+#sensor_name=sensor1
 
 # Hostname for the honeypot. Displayed by the shell prompt of the virtual
 # environment
 #
 # (default: svr04)
-hostname = svr04
+hostname = vps6596
 
 
 # Directory where to save log files in.
@@ -147,7 +147,7 @@ timezone = UTC
 # behaviour).
 #
 # (default: not specified)
-#fake_addr = 192.168.66.254
+fake_addr = 192.168.66.254
 
 
 # The IP address on which this machine is reachable on from the internet.
@@ -650,7 +650,7 @@ auth_keyboard_interactive_enabled = false
 [telnet]
 
 # Enable Telnet support, disabled by default
-enabled = false
+enabled = true
 
 # Endpoint to listen on for incoming Telnet connections.
 # See https://twistedmatrix.com/documents/current/core/howto/endpoints.html#servers
@@ -806,11 +806,11 @@ format = text
 # MySQL logging requires an extra Python module: pip install mysql-python
 #
 [output_mysql]
-enabled = false
-host = localhost
+enabled = true
+host = redacted
 database = cowrie
-username = cowrie
-password = secret
+username = redacted
+password = redacted
 port = 3306
 debug = false
 
