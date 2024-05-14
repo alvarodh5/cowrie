@@ -13,7 +13,7 @@ from cowrie.core.config import CowrieConfig
 
 # For exceptions: https://dev.mysql.com/doc/connector-python/en/connector-python-api-errors-error.html
 import mysql.connector
-
+import geoip2.database
 
 class ReconnectingConnectionPool(adbapi.ConnectionPool):
     """
@@ -130,11 +130,28 @@ class Output(cowrie.core.output.Output):
 
                 r = yield self.db.runQuery("SELECT LAST_INSERT_ID()")
                 sensorid = int(r[0][0])
-            self.simpleQuery(
-                "INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`) "
-                "VALUES (%s, FROM_UNIXTIME(%s), %s, %s)",
-                (event["session"], event["time"], sensorid, event["src_ip"]),
-            )
+
+                
+            # Bloque para manejar la geolocalización
+            with geoip2.database.Reader('/home/cowrie/cowrie/GeoLite2-City.mmdb') as reader:
+                try:
+                    response = reader.city(event["src_ip"])
+                    country = response.country.iso_code
+                    latitude = response.location.latitude
+                    longitude = response.location.longitude
+
+                    self.simpleQuery(
+                        "INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`, `protocol`, `lat`, `long`, `country`) "
+                        "VALUES (%s, FROM_UNIXTIME(%s), %s, %s, %s, %s, %s, %s)",
+                        (event["session"], event["time"], sensorid, event["src_ip"], event["protocol"], latitude, longitude, country),
+                    )
+                except Exception as e:
+                    log.msg(f"output_mysql: GeoIP Error: {e}")
+                    self.simpleQuery(
+                        "INSERT INTO `sessions` (`id`, `starttime`, `sensor`, `ip`) "
+                        "VALUES (%s, FROM_UNIXTIME(%s), %s, %s)",
+                        (event["session"], event["time"], sensorid, event["src_ip"]),
+                    )
 
         elif event["eventid"] == "cowrie.login.success":
             self.simpleQuery(
